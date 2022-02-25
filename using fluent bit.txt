@@ -1,0 +1,87 @@
+using fluent-bit
+1)create name space:- 
+
+kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/cloudwatch-namespace.yaml
+
+2)we need create the configmap name cluster-info
+
+ClusterName=a1
+RegionName=us-east-1
+FluentBitHttpPort='2020'
+FluentBitReadFromHead='Off'
+[[ ${FluentBitReadFromHead} = 'On' ]] && FluentBitReadFromTail='Off'|| FluentBitReadFromTail='On'
+[[ -z ${FluentBitHttpPort} ]] && FluentBitHttpServer='Off' || FluentBitHttpServer='On'
+kubectl create configmap fluent-bit-cluster-info \
+--from-literal=cluster.name=${ClusterName} \
+--from-literal=http.server=${FluentBitHttpServer} \
+--from-literal=http.port=${FluentBitHttpPort} \
+--from-literal=read.head=${FluentBitReadFromHead} \
+--from-literal=read.tail=${FluentBitReadFromTail} \
+--from-literal=logs.region=${RegionName} -n amazon-cloudwatch
+
+
+Fluent Bit optimized configuration sends logs to kubernetes-nodeName-application.var.log.containers.kubernetes-podName_kubernetes-namespace_kubernetes-container-name-kubernetes-containerID
+
+3)Download and deploy the Fluent Bit daemonset to the cluster
+
+kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/fluent-bit/fluent-bit.yaml
+
+4)Each node should have one pod named fluent-bit-*.
+
+kubectl get pods -n amazon-cloudwatch
+
+user1@LAPTOP-N2JC5BLV:~$ kubectl get pods -n amazon-cloudwatch
+NAME               READY   STATUS    RESTARTS   AGE
+fluent-bit-d2j5q   1/1     Running   0          32s
+fluent-bit-jztjb   1/1     Running   0          32s
+
+
+curl -O https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/cwagent/cwagent-configmap.yaml
+
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ContainerInsights-Prometheus.html
+
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "ec2:DescribeAccountAttributes",
+                "ec2:DescribeAddresses",
+                "ec2:DescribeInternetGateways"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+
+
+
+
+/root/.aws/credentials
+
+
+
+aws eks --region us-east-2 update-kubeconfig --name dev
+
+
+
+kubectl delete namespace amazon-cloudwatch
+
+
+
+
+Could not read shared credentials file /root/.aws/credentials
+
+[signv4] Provider returned no credentials, service=logs
+[2021/12/14 19:03:02] [error] [aws_client] could not sign request
+
+[aws_credentials] Could not read shared credentials file /root/.aws/credentials
+[2021/12/14 19:10:19] [error] [aws_credentials] Failed to retrieve credentials for AWS Profile default
+[2021/12/14 19:10:19] [ warn] [aws_credentials] No cached credentials are available and a credential refresh is already in progress. The current co-routine will retry.
+[2021/12/14 19:10:19] [error] [signv4] Provider returned no credentials, service=logs
+[2021/12/14 19:10:19] [error] [aws_client] could not sign request
+[2021/12/14 19:10:19] [error] [output:cloudwatch_logs:cloudwatch_logs.0] Failed to create log group
+
