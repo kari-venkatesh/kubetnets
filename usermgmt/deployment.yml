@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: usermgmt
+  labels:
+    app: usermgmt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: usermgmt
+  template:
+    metadata:
+      annotations:
+        iam.amazonaws.com/role: arn:aws:iam::006396608450:role/usermgmt.service
+      labels:
+        app: usermgmt
+      name: usermgmt
+    spec:
+      containers:
+      - name: usermgmt
+        image: 006396608450.dkr.ecr.us-east-2.amazonaws.com/usermgmt:1.0.101
+        ports:
+        - name: http
+          containerPort: 9096
+        env:
+        - name: AWS_RDS_JDBCURL
+          valueFrom:
+            configMapKeyRef:
+              name: usermgmt
+              key: AWS_RDS_JDBCURL
+        - name: AWS_RDS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: usermgmt-db-sk
+              key: username
+        - name: AWS_RDS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: usermgmt-db-sk
+              key: password

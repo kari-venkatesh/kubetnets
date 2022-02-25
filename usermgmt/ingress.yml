@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: usermgmt
+  annotations:
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+  namespace: default
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /usermgmt/(.+)
+            backend:
+              serviceName: usermgmt
+              servicePort: 9096

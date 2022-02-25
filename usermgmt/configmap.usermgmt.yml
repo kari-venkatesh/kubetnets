@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: usermgmt
+data:
+  AWS_RDS_JDBCURL: jdbc:postgresql://dev-rds-new.caa2fenzf9sb.us-east-2.rds.amazonaws.com:5432/global
